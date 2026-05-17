@@ -1,0 +1,8 @@
+{
+  "name": "Remix: DNSDJ CYBER GYAAN",
+  "description": "Premium cyber-security and ethical hacking learning platform with futuristic hacker UI, video tutorials, and premium learning resources.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

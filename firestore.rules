@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Primitives
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { 
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // ID Validation (General)
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // User Profile Rules
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.keys().hasAll(['userId', 'email', 'role', 'membership']) &&
+               data.userId == request.auth.uid &&
+               data.email is string &&
+               data.role in ['user', 'admin'] &&
+               data.membership in ['free', 'premium'];
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      
+      allow create: if isOwner(userId) && 
+                      isValidUser(incoming()) && 
+                      (
+                        (incoming().role == 'user' && incoming().membership == 'free') ||
+                        (incoming().email in ['sharmanetworking8472@gmail.com', 'rr7151230@gmail.com'] && incoming().role == 'admin')
+                      );
+                      
+      allow update: if (isOwner(userId) && 
+                      incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'downloadHistory'])) || 
+                      isAdmin();
+    }
+
+    // Video Rules
+    match /videos/{videoId} {
+      function isValidVideo(data) {
+        return data.title is string && data.title.size() <= 200 &&
+               data.youtubeUrl is string && data.youtubeUrl.size() <= 500;
+      }
+      
+      allow read: if true; // Public access for learning
+      allow write: if isAdmin() && isValidVideo(incoming());
+    }
+
+    // File Rules
+    match /files/{fileId} {
+      function isValidFile(data) {
+        return data.title is string && data.title.size() <= 200 &&
+               data.fileUrl is string && data.fileUrl.size() <= 500;
+      }
+      
+      allow read: if true;
+      allow write: if isAdmin() && isValidFile(incoming());
+    }
+
+    // Payment Rules
+    match /payments/{paymentId} {
+      function isValidPayment(data) {
+        return data.userId == request.auth.uid &&
+               data.screenshotUrl is string &&
+               data.status == 'pending';
+      }
+      
+      allow get: if isOwner(existing().userId) || isAdmin();
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      
+      allow create: if isSignedIn() && isValidPayment(incoming());
+      allow update: if isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status']);
+      allow delete: if isAdmin();
+    }
+
+    // Config Rules
+    match /config/main {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user membership and profile details.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "membership": { "type": "string", "enum": ["free", "premium"] },
+        "downloadHistory": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email", "role"]
+    },
+    "Video": {
+      "title": "Educational Video",
+      "description": "Stores cyber security tutorial details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "youtubeUrl": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "youtubeUrl", "category"]
+    },
+    "File": {
+      "title": "Premium Learning Material",
+      "description": "Stores details for PDFs, ZIPs, and Notes.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "isPremium": { "type": "boolean" },
+        "type": { "type": "string", "enum": ["pdf", "zip", "notes"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "fileUrl", "isPremium"]
+    },
+    "Payment": {
+      "title": "Payment Proof",
+      "description": "Stores payment submissions for manual/auto approval.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "amount": { "type": "number" },
+        "screenshotUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "screenshotUrl", "status"]
+    },
+    "AppConfig": {
+      "title": "Application Configuration",
+      "description": "Global settings for the app, editable by admin.",
+      "type": "object",
+      "properties": {
+        "upiId": { "type": "string" },
+        "qrCodeUrl": { "type": "string" },
+        "announcement": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "User profiles and membership status."
+    },
+    "videos": {
+      "schema": "Video",
+      "description": "Tutorial videos collection."
+    },
+    "files": {
+      "schema": "File",
+      "description": "Premium learning resources."
+    },
+    "payments": {
+      "schema": "Payment",
+      "description": "Payment proof submissions."
+    },
+    "config": {
+      "schema": "AppConfig",
+      "description": "Global app configuration."
+    }
+  }
+}
